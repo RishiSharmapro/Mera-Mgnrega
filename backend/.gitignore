@@ -2,5 +2,4 @@ node_modules/
 .env
 mgnrega-rajasthan-24-25.csv
 db/processed_data.json
-db/seed_from_processed_data.js
 db/data.json

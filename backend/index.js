@@ -2,7 +2,7 @@ import connectDB from "./db/connect.js";
 import "dotenv/config";
 import app from "./app.js";
 // import { seedDatabase } from "./db/seed.js";
-import { seedDatabase } from "./db/seed_from_processed_data.js";
+// import { seedDatabase } from "./db/seed_from_processed_data.js";
 import { fetchAndStoreData } from "./jobs/fetch_corn.js";
 
 connectDB()
