@@ -1,7 +1,8 @@
 {
   "title": "MGNREGA Work Report",
-  "title-compare": "Compare MGNREGA Districts",
   "compare": "Compare",
+  "title-compare": "Compare MGNREGA Districts",
+  "select_field": "Select a field",
   "fetch_district": "Fetch My District",
   "simple_reports_title": "Simple MGNREGA Reports",
   "simple_reports_subtitle": "Understand your work, wages, and payments.",

@@ -1,22 +1,11 @@
-import React, { useState, useContext } from 'react';
-import { MetricCard, DetailedInfo, Icon } from './index.js';
+import { useState, useContext } from 'react';
 import '../index.css';
 import useDistrictData from '../hooks/UseDistrictData.jsx';
 import { LanguageContext } from '../context/LanguageContext.js';
 import { districts, months, fin_years, states } from '../constants.js';
 import DistrictDataCard from './DistrictDataCard.jsx';
+import CompareDistrictChart from './CompareDistrictChart.jsx';
 
-
-// Specific icons for each metric
-const Icons = {
-  families: <Icon path="/families-worked.svg" />,
-  projects: <Icon path="project-completed.svg" />,
-  wage: <Icon path="indian-rupee.svg" />,
-  days: <Icon path="work-per-family.svg" />,
-  women: <Icon path="women-participation.svg" />,
-  timely: <Icon path="timely-payments.svg" />,
-  hundredDays: <Icon path="calendar-days.svg" />,
-};
 
 const LoadingSpinner = () => (
   <div className="flex items-center justify-center h-screen">
@@ -32,11 +21,12 @@ export default function CompareDistrict() {
   const [showDetails1, setShowDetails1] = useState(false);
   const [showDetails2, setShowDetails2] = useState(false);
   const [selectedDistrict1, setSelectedDistrict1] = useState("JAIPUR");
-  const [selectedDistrict2, setSelectedDistrict2] = useState("JAIPUR");
+  const [selectedDistrict2, setSelectedDistrict2] = useState("AJMER");
   const [month1, setMonth1] = useState("Jan");
   const [month2, setMonth2] = useState("Jan");
   const [fin_year1, setFin_year1] = useState("2024-2025");
   const [fin_year2, setFin_year2] = useState("2024-2025");
+  const [field, setField] = useState("families_worked")
   const { data: monthlyData1, isLoading1, isError1 } = useDistrictData(
     selectedDistrict1,
     fin_year1,
@@ -155,7 +145,7 @@ export default function CompareDistrict() {
             <label htmlFor="month-select" className="block text-sm font-medium text-gray-700 mb-2">{`${t("select_month")} 2`}</label>
             <select
               id="month-select"
-              value={month1}
+              value={month2}
               onChange={(e) => setMonth2(e.target.value)}
               className="w-full max-w-xs p-3 border border-gray-300 rounded-lg shadow-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
             >
@@ -206,6 +196,31 @@ export default function CompareDistrict() {
         <DistrictDataCard showDetails={showDetails2} monthlyData={monthlyData2} setShowDetails={setShowDetails2} />
         </>
           )}
+
+        <div>
+          <div className='p-10 rounded-t-2xl rounded-2x bg-white shadow-lg border border-gray-200 flex flex-col md:flex-row justify-center align-middle space-x-2'>
+            <label htmlFor="data-row" className="font-bold  text-gray-700 pt-3 sm:pb-3 mx-auto md:mx-2">{t("select_field")}:</label>
+            <select name="data-row" id="data-row" 
+            defaultValue={field} 
+            onChange={(e) => setField(e.target.value)}
+            className="p-3 max-w-96 mx-auto md:mx-2 border border-gray-300 rounded-lg shadow-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+            >
+              <option value="families_worked">{t("families_worked")}</option>
+              <option value="projects_completed">{t("projects_completed")}</option>
+              <option value="average_wage">{t("average_wage")}</option>
+              <option value="work_per_family">{t("work_per_family")}</option>
+              <option value="women_participation">{t("women_participation")}</option>
+              <option value="timely_payments">{t("timely_payments")}</option>
+              <option value="families_100_days">{t("families_100_days")}</option>
+              <option value="ongoing_projects">{t("ongoing_projects")}</option>
+              <option value="total_money_spent">{t("total_money_spent")}</option>
+              <option value="sc_work">{t("sc_work")}</option>
+              <option value="st_work">{t("st_work")}</option>
+            </select>
+
+          </div>
+          <CompareDistrictChart district1={selectedDistrict1} district2={selectedDistrict2} district1Data={monthlyData1} district2Data={monthlyData2} label={field} displayName={t(`${field}`)} />
+        </div>
     </div>
     </div >
   );

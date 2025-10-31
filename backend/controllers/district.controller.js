@@ -1,89 +1,44 @@
 import { District } from '../models/district.model.js';
 import axios from 'axios';
+import { Summary } from '../models/summary.model.js';
 
-function parseGeminiSummary(text) {
-//   const sections = {
-//     goodPoints: [],
-//     canBeBetter: [],
-//     needsImprovement: []
-//   };
+function parseGeminiSummaries(text) {
+  const englishRegex = /\*\*English\*\*([\s\S]*?)(?=\*\*Hindi\*\*|$)/;
+  const hindiRegex = /\*\*Hindi\*\*([\s\S]*)/;
 
-//   // Normalize newlines
-//   text = text.replace(/\r/g, "").trim();
+  const englishMatch = text.match(englishRegex);
+  const hindiMatch = text.match(hindiRegex);
 
-//   // Extract each section using regex
-//   const goodMatch = text.match(/\*\*(?:✅\s*)?Good Points(?:\s*✅)?\*\*([\s\S]*?)(?=\*\*(?:Can Be Better|🟡|Needs Improvement|🔴)|$)/);
-//   const betterMatch = text.match(/\*\*(?:🟡\s*)?Can Be Better(?:\s*🟡)?\*\*([\s\S]*?)(?=\*\*(?:Needs Improvement|🔴)|$)/);
-//   const badMatch = text.match(/\*\*(?:🔴\s*)?Needs Improvement(?:\s*🔴)?\*\*([\s\S]*)/);
+  const englishText = englishMatch ? englishMatch[1].trim() : "";
+  const hindiText = hindiMatch ? hindiMatch[1].trim() : "";
 
-//   const extractBullets = (section) =>
-//     section ? section
-//           .split("\n")
-//           .map((line) => line?.replace(/^[*\-•\s]+/, "").trim())
-//           .filter((line) => line.length > 0)
-//       : [];
+  function parseSection(text, lang = "en") {
+    const regex =
+      lang === "hi"
+        ? /\*\*अच्छे पहलू:\*\*([\s\S]*?)\*\*बेहतर किया जा सकता है:\*\*([\s\S]*?)\*\*सुधार की आवश्यकता:\*\*([\s\S]*)/
+        : /\*\*Good Points:\*\*([\s\S]*?)\*\*Can Be Better:\*\*([\s\S]*?)\*\*Needs Improvement:\*\*([\s\S]*)/;
 
-//   sections.goodPoints = extractBullets(goodMatch?.[1]);
-//   sections.canBeBetter = extractBullets(betterMatch?.[1]);
-//   sections.needsImprovement = extractBullets(badMatch?.[1]);
+    const match = text.match(regex);
+    let summary = { goodPoints: [], canBeBetter: [], needsImprovement: [] };
 
-//   return sections;
+    if (match) {
+      const [_, good, better, bad] = match;
 
+      summary = {
+        goodPoints: good.match(/\*\s+(.*)/g)?.map(s => s.replace(/^\*\s+/, '').trim()) || [],
+        canBeBetter: better.match(/\*\s+(.*)/g)?.map(s => s.replace(/^\*\s+/, '').trim()) || [],
+        needsImprovement: bad.match(/\*\s+(.*)/g)?.map(s => s.replace(/^\*\s+/, '').trim()) || []
+      };
+    }
 
-const regex = /\*\*Good Points:\*\*([\s\S]*?)\*\*Can Be Better:\*\*([\s\S]*?)\*\*Needs Improvement:\*\*([\s\S]*)/;
+    return summary;
+  }
 
-const match = text.match(regex);
+  const englishSummary = englishText ? parseSection(englishText, "en") : null;
+  const hindiSummary = hindiText ? parseSection(hindiText, "hi") : null;
 
-let summary = { goodPoints: [], canBeBetter: [], needsImprovement: [] };
-
-if (match) {
-  const [_, good, better, bad] = match;
-
-  summary = {
-    goodPoints: good.match(/\*\s+(.*)/g)?.map(s => s.replace(/^\*\s+/, '').trim()) || [],
-    canBeBetter: better.match(/\*\s+(.*)/g)?.map(s => s.replace(/^\*\s+/, '').trim()) || [],
-    needsImprovement: bad.match(/\*\s+(.*)/g)?.map(s => s.replace(/^\*\s+/, '').trim()) || []
-  };
+  return { english: englishSummary, hindi: hindiSummary };
 }
-
-console.log(summary);
-return summary;
-}
-
-// console.log('--- Parsing Gemini Summary Test ---');
-// const text = `
-// **Good Points:**
-// *   High percentage of payments made within 15 days.
-// *   Large number of workers employed.
-// *   Significant women participation.
-
-// **Can Be Better:**
-// * Average wage rate can be better.
-// *   Average employment days per household could be increased.
-
-// **Needs Improvement:**
-// *   Very few households completed 100 days of work in some months.
-// `;
-// console.log(parseGeminiSummary(text))
-// Example usage:
-const summaryText = `Here's a simplified summary of MGNREGA in Rajasthan's Ajmer district:
-
-**✅ Good Points:**
-* High percentage of payments made within 15 days.
-* Large number of workers employed.
-* Significant women participation.
-
-**🟡 Can Be Better:**
-* Average wage rate is relatively low.
-* Average employment days per household vary across months.
-
-**🔴 Needs Improvement:**
-* Very few households completed 100 days of work in many months.
-* Employment is low in some months.
-`;
-
-// console.log(parseGeminiSummary(summaryText));
-
 
 const getSummaries = async (data) => {
     try {
@@ -93,26 +48,66 @@ const getSummaries = async (data) => {
             2. Can Be Better
             3. Needs Improvement
             Keep it under 80 words, simple language and bullet points.
+            The output should be in 2 languages - English and Hindi.
+            Provide the output in the following format:
+            
+            **Good Points:**
+            * Point 1
+            * Point 2
+
+            **Can Be Better:**
+            * Point 1
+            * Point 2
+
+            **Needs Improvement:**
+            * Point 1
+            * Point 2
+            Example Output:
+            **English**
+
+            **Good Points:**
+            * Provides rural employment opportunities.
+            * Helps create rural infrastructure.
+
+            **Can Be Better:**
+            * Wage rates could be higher.
+            * Timely payment of wages needs improvement.
+
+            **Needs Improvement:**
+            * Corruption and leakages need to be addressed.
+            * Focus on creating more durable assets.
+
+            **Hindi**
+
+            **अच्छे पहलू:**
+            * ग्रामीण रोजगार के अवसर प्रदान करता है।
+            * ग्रामीण बुनियादी ढांचे के निर्माण में मदद करता है।
+
+            **बेहतर किया जा सकता है:**
+            * मजदूरी दरें अधिक हो सकती हैं।
+            * मजदूरी का समय पर भुगतान में सुधार की आवश्यकता है।
+
+            **सुधार की आवश्यकता:**
+            * भ्रष्टाचार और रिसाव को दूर करने की जरूरत है।
+            * अधिक टिकाऊ संपत्ति बनाने पर ध्यान दें।
 
             Data: ${JSON.stringify(data)}
         `;
 
         const response = await axios.post(
-            "https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent",
-        {
-            contents: [{ parts: [{ text: prompt }] }]
-        },
-        {
-            headers: { 
-                "Content-Type": "application/json",
-                "X-goog-api-key": process.env.GEMINI_API_KEY 
+            process.env.GEMINI_API,
+            {
+                contents: [{ parts: [{ text: prompt }] }]
+            },
+            {
+                headers: {
+                    "Content-Type": "application/json",
+                    "X-goog-api-key": process.env.GEMINI_API_KEY
+                }
             }
-        }
         );
 
-        // console.log('Summary response:', response.data);
         const summary = response.data?.candidates?.[0]?.content?.parts?.[0]?.text;
-        console.log("Summary:", summary || "No text generated");
 
         return summary || "No summary available.";
     } catch (error) {
@@ -129,32 +124,58 @@ const getDistrictData = async (req, res) => {
 
 
     try {
-        const districtData = await District.findOne(
-            { district_name: district.toUpperCase() }
-        );
+        const data = await District.aggregate([
+            {
+                $match: {
+                    district_name: district.toUpperCase(),
+                    state_name: state.toUpperCase()
+                }
+            },
+            {
+                $lookup: {
+                    from: "summaries",
+                    localField: "state_code",
+                    foreignField: "state_code",
+                    as: "summaries"
+                }
+            },
+            {
+                $addFields: {
+                    summary: {
+                        $arrayElemAt: ["$summaries", 0]
+                    }
+                }
+            }
+        ]);
 
-        const summary = await getSummaries(districtData);
-        const parsedSummary = summary ? parseGeminiSummary(summary) : {};
-        console.log('Parsed Summary:', parsedSummary);
-
+        const districtData = data[0];
         if (!districtData) {
-            return res.status(404).json({ message: 'Data not found for the specified district and financial year.' });
+            return res.status(404).json({ message: 'Data not found for the specified district or financial year.' });
         }
 
-        if (districtData.state_name.toUpperCase() !== state.toUpperCase()) {
-            return res.status(404).json({ message: 'Data not found for the specified state and district.' });
+        if (!districtData.summary.summary?.english?.goodPoints) {
+            const summary = await getSummaries(districtData);
+            const parsedSummary = summary ? parseGeminiSummaries(summary) : {};
+            console.log('Parsed Summary:', parsedSummary);
+            districtData.summary = parsedSummary;
+            // Save or update the summary in the database
+            await Summary.create({
+                state_code: districtData.state_code,
+                fin_year: fin_year,
+                summary: parsedSummary
+            });
+            console.log('Summary saved/updated in the database.');
         }
 
         const monthlyData = districtData.monthly_data.filter(data => data.fin_year === fin_year);
 
         if (!monthlyData.length) {
-            console.log('No monthly data found for the specified financial year.');
             return res.status(404).json({ message: 'No data available for the specified financial year.' });
         }
-        
+
         res.status(200).json({
             monthlyData,
-            summary: parsedSummary
+            summary: districtData.summary.summary
         });
     } catch (error) {
         console.error('Error fetching district data:', error);
@@ -164,7 +185,7 @@ const getDistrictData = async (req, res) => {
 
 const compareDistricts = async (req, res) => {
     const { fin_year, district1, district2 } = req.params;
-    
+
     if (!fin_year || !district1 || !district2) {
         return res.status(400).json({ message: 'Financial year and both districts are required for comparison.' });
     }
@@ -177,7 +198,7 @@ const compareDistricts = async (req, res) => {
         const secondDistrictData = await District.findOne(
             { district_name: district2.toUpperCase() }
         );
-        
+
         if (!firstDistrictData || !secondDistrictData) {
             return res.status(404).json({ message: 'Data not found for one or both specified districts.' });
         }

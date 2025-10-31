@@ -9,7 +9,6 @@ export async function fetchAndStoreData() {
     console.log("🕒 Fetching new MGNREGA data...");
     const res = await axios.get(API_URL);
     const data = res.data;
-    // console.log(res)
 
     await seedDatabase(JSON.stringify(data?.records));
 
@@ -18,9 +17,6 @@ export async function fetchAndStoreData() {
     console.error("❌ Error fetching MGNREGA data:", err);
   }
 }
-
-// Run once at startup (optional)
-// fetchAndStoreData();
 
 // Schedule — every Sunday 2 AM
 cron.schedule("0 2 * * 0", fetchAndStoreData);

@@ -12,18 +12,16 @@ const seedDatabase = async () => {
         
         console.log(`📦 Preparing to insert ${allDistricts.length} districts...`);
 
-        // await District.deleteMany({});
         for (const district of allDistricts) {
             if (district.district_code && district.district_name) {
                 await District.insertOne(district);
             }
         }
-        // await District.insertMany(allDistricts);
+
         console.log("✅ Data seeded successfully!");
     } catch (error) {
         console.error("Error reading or parsing data.json:", error);
     }
 }
-// seedDatabase();
 
 export { seedDatabase };

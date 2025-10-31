@@ -7,9 +7,6 @@ const filePath = path.join(__dirname, "/db/data.json");
 
 const seedDatabase = async (data) => {
     try {
-        // const data = fs.readFileSync(filePath, 'utf-8');
-        // const jsonData = JSON.parse(data);
-        // const seedData = jsonData.mgnrega.data;
         const seedData = JSON.parse(data);
 
         const grouped = {};
@@ -51,10 +48,9 @@ const seedDatabase = async (data) => {
             ...district,
             monthly_data: Object.values(district.monthly_data)
         }));
-        // console.log(allDistricts[0]);
-        // fs.writeFileSync(path.join(__dirname, "/db/data.json"), JSON.stringify(allDistricts, null, 2));
+
         console.log(`📦 Preparing to insert ${allDistricts.length} districts...`);
-        // await District.deleteMany({});
+
         for (const district of allDistricts) {
             if (district.district_code && district.district_name) {
                 const existing = await District.findOne({ district_code: district.district_code });
@@ -73,12 +69,11 @@ const seedDatabase = async (data) => {
                 await District.insertOne(district);
             }
         }
-        // await District.insertMany(allDistricts);
+
         console.log("✅ Data seeded successfully!");
     } catch (error) {
         console.error("Error reading or parsing data.json:", error);
     }
 }
-// seedDatabase();
 
 export { seedDatabase };

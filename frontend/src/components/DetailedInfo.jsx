@@ -2,7 +2,8 @@ import Icon from "./Icon";
 import SummarySection from "./SummarySection";
 import MetricCard from "./MetricCard";
 import { LanguageContext } from "../context/LanguageContext";
-import { useContext } from "react";
+import { useContext, useState } from "react";
+import { useEffect } from "react";
 
 
 const Icons = {
@@ -12,9 +13,19 @@ const Icons = {
 };
 
 const DetailedInfo = ({ data }) =>  { 
-    console.log("DetailedInfo data:", data);
+    const [summary, setSummary] = useState({});
     const useLang = () => useContext(LanguageContext);
-    const { t } = useLang();
+    const { t, lang } = useLang();
+    const englishSummary = data?.summary?.english;
+    const hindiSummary = data?.summary?.hindi;
+
+    useEffect(() => {
+        if (lang === "en") {
+            setSummary(englishSummary);
+        } else {
+            setSummary(hindiSummary);
+        }
+    }, [data, lang]);
     
     return (
     <div className="mt-6 bg-gray-50 p-6 rounded-lg animate-fade-in">
@@ -29,9 +40,9 @@ const DetailedInfo = ({ data }) =>  {
         <div className="mt-8">
              <h3 className="text-xl font-bold text-gray-800 mb-4">{t("summary")}</h3>
             <div className="space-y-4">
-                 <SummarySection title={t("good_points")} items={data?.summary?.goodPoints} color="text-green-600" />
-                 <SummarySection title={t("can_be_better")} items={data?.summary?.canBeBetter} color="text-yellow-600" />
-                 <SummarySection title={t("needs_improvement")} items={data?.summary?.needsImprovement} color="text-red-600" />
+                 <SummarySection title={t("good_points")} items={summary?.goodPoints} color="text-green-600" />
+                 <SummarySection title={t("can_be_better")} items={summary?.canBeBetter} color="text-yellow-600" />
+                 <SummarySection title={t("needs_improvement")} items={summary?.needsImprovement} color="text-red-600" />
             </div>
         </div>
     </div>
