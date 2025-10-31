@@ -2,12 +2,14 @@ import axios from 'axios';
 import { useQuery } from "@tanstack/react-query";
 
 const useDistrictData = (selectedDistrict, fin_year, month, state) => {
+  const BASE_URL = import.meta.env.VITE_BACKEND_URL;
+
   return useQuery({
     // cache key
     queryKey: ["districtData", fin_year, month, state, selectedDistrict],
 
     queryFn: async () => {
-      const response = await axios.get(`/api/v1/mgnrega/${fin_year}/${selectedDistrict}/${state}`);
+      const response = await axios.get(`${BASE_URL}/api/v1/mgnrega/${fin_year}/${selectedDistrict}/${state}`);
       const data = response.data.monthlyData;
       const summary = response.data.summary;
 

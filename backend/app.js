@@ -3,8 +3,21 @@ import cors from 'cors';
 
 const app = express();
 
+const allowedOrigins = JSON.parse(process.env.CORS_ORIGIN || '[]');
+
 // Middleware
-app.use(cors());
+app.use(cors({
+    origin: function (origin, callback) {
+        // allowing requests with no origin
+        if (!origin) return callback(null, true);
+        if (allowedOrigins.includes(origin)) {
+            return callback(null, true);
+        } else {
+            const msg = 'The CORS policy for this site does not allow access from the specified Origin.';
+            return callback(new Error(msg), false);
+        }
+    }
+}));
 app.use(express.json());
 
 // routes
