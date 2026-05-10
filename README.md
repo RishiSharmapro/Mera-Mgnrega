@@ -9,7 +9,7 @@ The platform provides interactive charts and AI-powered summaries for better tra
 
 🔗 **Frontend:** [https://mera-mgnrega.vercel.app](https://mera-mgnrega.vercel.app)
 
-⚙️ **Backend:** Hosted securely on **DigitalOcean App Platform**
+⚙️ **Backend:** Hosted securely on **Render**
 
 🧠 **Developer:** [Rishi Sharma](https://rishisharmapro.vercel.app)
 
